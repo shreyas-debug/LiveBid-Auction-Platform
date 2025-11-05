@@ -1,0 +1,6 @@
+@LiveBid.Api_HostAddress = http://localhost:5134
+
+GET {{LiveBid.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
