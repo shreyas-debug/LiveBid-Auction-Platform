@@ -1,7 +1,9 @@
 using LiveBid.Api.Data;
 using LiveBid.Api.Models;
+using LiveBid.Api.Hubs;
 using LiveBid.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -51,7 +53,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // Add services to the container.
 builder.Services.AddScoped<TokenService>(); // Our custom TokenService
-builder.Services.AddControllers(); // This is for our future controllers
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // This tells the serializer to handle object cycles
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    });
+builder.Services.AddSignalR(); // This adds SignalR services
 builder.Services.AddEndpointsApiExplorer(); // This is needed by Swagger
 builder.Services.AddSwaggerGen(options =>
 {
@@ -116,6 +124,9 @@ app.MapGet("/weatherforecast", () =>
 .WithName("GetWeatherForecast");
 
 app.MapControllers();
+// This tells the server to route all /auctionHub connections
+// to our new AuctionHub class.
+app.MapHub<AuctionHub>("/auctionHub");
 
 app.Run();
 
