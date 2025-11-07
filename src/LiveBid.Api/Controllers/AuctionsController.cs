@@ -2,6 +2,7 @@
 using LiveBid.Api.Models; //Auction model
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LiveBid.Api.Controllers
 {
@@ -43,6 +44,7 @@ namespace LiveBid.Api.Controllers
 
         // --- Our Second Endpoint: POST /api/auctions ---
         // This method will create a new auction.
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Auction>> CreateAuction(Auction auction)
         {
