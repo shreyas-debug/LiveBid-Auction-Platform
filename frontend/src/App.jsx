@@ -1,4 +1,8 @@
-import React from 'react'
+import React from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import RegisterPage from './pages/RegisterPage';
+// import LoginPage from './pages/LoginPage';
 
 function App() {
   return (
@@ -6,17 +10,22 @@ function App() {
       <header>
         <h1>LiveBid</h1>
         <nav>
-          <a href="/">Home</a>
-          <a href="/login">Login</a>
-          <a href="/register">Register</a>
+          {/* Use 'Link' instead of 'a' for client-side routing */}
+          <Link to="/">Home</Link>
+          <Link to="/login">Login</Link>
+          <Link to="/register">Register</Link>
         </nav>
       </header>
+
       <main>
-        {/* Our pages will be rendered here later */}
-        <h2>Welcome to LiveBid!</h2>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          {/* <Route path="/login" element={<LoginPage />} /> */}
+        </Routes>
       </main>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
