@@ -12,6 +12,18 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173") // React app's URL
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials(); // This is for SignalR
+        });
+});
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AuctionDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -100,6 +112,7 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
+app.UseCors("AllowReactApp");
 app.UseAuthentication(); // 1. This checks if the user has a valid token
 app.UseAuthorization(); // 2. This checks if the user is allowed to access the resource
 
