@@ -1,22 +1,43 @@
 import axios from 'axios';
 
-// This is backend's URL
-const API_URL = 'http://localhost:5134';
+const API_URL = 'http://localhost:5134'; 
 
 const api = axios.create({
   baseURL: API_URL,
 });
 
-// This function will handle the POST request to /api/auth/register endpoint
+api.interceptors.request.use(
+  (config) => {
+    // Get the token from localStorage
+    const token = localStorage.getItem('token');
+    if (token) {
+      // If the token exists, add it to the Authorization header
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export const registerUser = (userData) => {
-  // userData will be an object like { username, email, password }
   return api.post('/api/auth/register', userData);
 };
 
 export const loginUser = (loginData) => {
-  // loginData will be { username, password }
-  // The backend will send back { username, token }
   return api.post('/api/auth/login', loginData);
+};
+
+
+// Function for POST /api/auctions
+export const createAuction = (auctionData) => {
+  return api.post('/api/auctions', auctionData);
+};
+
+// Function for GET /api/auctions
+export const getAuctions = () => {
+  return api.get('/api/auctions');
 };
 
 export default api;
