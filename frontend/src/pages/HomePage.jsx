@@ -1,36 +1,49 @@
-import React from 'react';
-import { createAuction } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { getAuctions } from '../services/api'; //Import getAuctions
+import AuctionCard from '../components/AuctionCard'; //Import our new component
 
 function HomePage() {
-  const handleTestCreateAuction = async () => {
-    try {
-      // This test data matches our backend's 'Auction' model
-      const testAuctionData = {
-        itemName: "Test Auction from React",
-        description: "This proves our token is working!",
-        startingPrice: 50,
-        startTime: new Date().toISOString(),
-        endTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString() // 3 days from now
-      };
+  //Create state to hold our list of auctions
+  const [auctions, setAuctions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-      await createAuction(testAuctionData);
-      alert('Auction created successfully!');
+  //useEffect runs once when the component mounts
+  useEffect(() => {
+    const fetchAuctions = async () => {
+      try {
+        setLoading(true);
+        //Call the API function from api.js
+        const response = await getAuctions();
+        setAuctions(response.data.$values); //Save the auctions to state
+        setError(null);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to fetch auctions.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    } catch (error) {
-      console.error(error);
-      alert('Failed to create auction. Are you logged in?');
-    }
-  };
+    fetchAuctions();
+  }, []); // The empty array [] means "run this only once"
 
+  //Render the component's UI
   return (
     <div>
-      <h2>Welcome to the Home Page!</h2>
-      <p>See all the active auctions here.</p>
+      <h2>Active Auctions</h2>
 
-      {/* Add a test button */}
-      <button onClick={handleTestCreateAuction}>
-        Test Create Auction (Must be logged in)
-      </button>
+      {loading && <p>Loading auctions...</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      {!loading && !error && (
+        <div className="auction-list">
+          {auctions.map((auction) => (
+            //Map over the state and render a card for each auction
+            <AuctionCard key={auction.id} auction={auction} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

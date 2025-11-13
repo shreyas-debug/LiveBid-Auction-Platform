@@ -20,7 +20,19 @@ namespace LiveBid.Api.Controllers
             _context = context;
         }
 
-        // --- Our First Endpoint: GET /api/auctions/{id} ---
+        // GET: /api/auctions
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Auction>>> GetAuctions()
+        {
+            // This finds all auctions that are not finished
+            var activeAuctions = await _context.Auctions
+                .Where(a => a.Status != AuctionStatus.Finished)
+                .OrderBy(a => a.EndTime)
+                .ToListAsync();
+                
+            return Ok(activeAuctions);
+        }
+
         // This method will find and return a single auction.
         [HttpGet("{id}")]
         public async Task<ActionResult<Auction>> GetAuction(Guid id)
@@ -42,7 +54,6 @@ namespace LiveBid.Api.Controllers
             return auction;
         }
 
-        // --- Our Second Endpoint: POST /api/auctions ---
         // This method will create a new auction.
         [Authorize]
         [HttpPost]

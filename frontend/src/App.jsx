@@ -3,6 +3,7 @@ import { Routes, Route, Link, useNavigate } from 'react-router-dom'; //Import us
 import HomePage from './pages/HomePage';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
+import AuctionDetailPage from './pages/AuctionDetailPage';
 import { useAuth } from './context/AuthContext'; //Import useAuth
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/auctions/:id" element={<AuctionDetailPage />} />
         </Routes>
       </main>
     </div>
