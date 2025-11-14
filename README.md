@@ -1,6 +1,5 @@
-Here is a professional README.md file for your project. You can copy and paste this directly into a new file named README.md in your root LiveBid folder.
-
 LiveBid: A Full-Stack Real-Time Auction Platform
+
 This is a full-stack web application that allows users to create, browse, and bid on auctions in real-time. When a user places a bid, the new price and bid history are instantly broadcast to all other connected clients without requiring a page refresh.
 
 This project was built to demonstrate a modern, secure, and event-driven architecture using a .NET 8 backend with SignalR and a responsive React frontend.
