@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../services/api';
-import { useAuth } from '../context/AuthContext'; // Import auth hook
+import { useAuth } from '../context/AuthContext';
 
 function LoginPage() {
   const [formData, setFormData] = useState({
@@ -9,7 +9,7 @@ function LoginPage() {
     password: '',
   });
   const [error, setError] = useState(null);
-  const { login } = useAuth(); // Get the 'login' function from our context
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -26,11 +26,8 @@ function LoginPage() {
     try {
       const response = await loginUser(formData);
 
-      // 'response.data' will be { username, token } from our backend
-      // Call the 'login' function from our context to save it
+      // 'response.data' will be { username, token } from our backend, Call the 'login' function from our context to save it
       login(response.data);
-
-      // Redirect to the home page
       navigate('/');
 
     } catch (err) {

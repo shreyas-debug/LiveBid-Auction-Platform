@@ -17,7 +17,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173") // React app's URL
+            policy.WithOrigins("http://localhost:5173")
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials(); // This is for SignalR
@@ -30,7 +30,7 @@ builder.Services.AddDbContext<AuctionDbContext>(options =>
 
 builder.Services.AddIdentityCore<AppUser>(options =>
 {
-    // Simple password rules for our project
+    // Simple password rules
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
@@ -99,7 +99,7 @@ builder.Services.AddSignalR()
 builder.Services.AddEndpointsApiExplorer(); // This is needed by Swagger
 builder.Services.AddSwaggerGen(options =>
 {
-    // 1. Define the security scheme (how to use the token)
+    // Define the security scheme (how to use the token)
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -109,7 +109,7 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Please enter a valid token in the field 'Bearer {token}'"
     });
 
-    // 2. Make Swagger use this scheme for all endpoints
+    // Make Swagger use this scheme for all endpoints
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -124,50 +124,23 @@ builder.Services.AddSwaggerGen(options =>
             new string[]{}
         }
     });
-}); // This adds the full Swagger service
+});
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger(); // Creates the swagger.json file
-    app.UseSwaggerUI(); // <-- This creates the interactive '/swagger' webpage
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 //app.UseHttpsRedirection();
 app.UseCors("AllowReactApp");
-app.UseAuthentication(); // 1. This checks if the user has a valid token
-app.UseAuthorization(); // 2. This checks if the user is allowed to access the resource
-
-// This is the default WeatherForecast endpoint. We'll delete it later.
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
-// This tells the server to route all /auctionHub connections
-// to our new AuctionHub class.
+
 app.MapHub<AuctionHub>("/auctionHub");
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

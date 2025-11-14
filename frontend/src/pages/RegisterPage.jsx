@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { registerUser } from '../services/api'; // Import API function
+import { registerUser } from '../services/api';
 
 function RegisterPage() {
   // 'useState' holds the data for our form
@@ -23,18 +23,15 @@ function RegisterPage() {
   // This function runs when the form is submitted
   const handleSubmit = async (e) => {
     e.preventDefault(); // Stop the browser from doing a full-page refresh
-    setError(null); // Clear old errors
+    setError(null);
 
     try {
       // Call our API function
       await registerUser(formData);
-
-      // If it works, redirect to the login page
       alert('Registration successful! Please log in.');
       navigate('/login');
 
     } catch (err) {
-      // If the backend returns an error
       console.error(err);
       setError('Registration failed. Please try again.');
     }
@@ -74,7 +71,6 @@ function RegisterPage() {
             required
           />
         </div>
-        {/* Show an error message if one exists */}
         {error && <p style={{ color: 'red' }}>{error}</p>}
         <button type="submit">Register</button>
       </form>

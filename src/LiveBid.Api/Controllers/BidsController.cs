@@ -22,13 +22,12 @@ namespace LiveBid.Api.Controllers
             _hubContext = hubContext;
         }
 
-        // --- Our Bidding Endpoint ---
         // POST /api/auctions/{auctionId}/bids
-        [Authorize] // 1. A user MUST be logged in to bid.
+        [Authorize] // A user MUST be logged in to bid.
         [HttpPost("auctions/{auctionId}/bids")]
         public async Task<ActionResult<Bid>> PlaceBid(Guid auctionId, BidDto bidDto)
         {
-            // 2. Find the auction the user is bidding on.
+            // Find the auction the user is bidding on.
             // We use 'Include(a => a.Bids)' to also load its bid history.
             var auction = await _context.Auctions
                 .Include(a => a.Bids)
@@ -39,35 +38,32 @@ namespace LiveBid.Api.Controllers
                 return NotFound("Auction not found.");
             }
 
-            // 3. --- Validation Logic ---
-            // You can add more rules here (e.g., check if auction is active)
+            // --- Validation Logic ---
             if (bidDto.Amount <= auction.CurrentPrice)
             {
-                // 400 Bad Request is the standard for a failed validation
                 return BadRequest("Your bid must be higher than the current price.");
             }
 
-            // 4. Get the ID of the user who is placing the bid.
+            // Get the ID of the user who is placing the bid.
             // The 'User' object is available because we used [Authorize]
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // 5. Create the new Bid object
+            // Create the new Bid object
             var bid = new Bid
             {
                 Id = Guid.NewGuid(),
                 Amount = bidDto.Amount,
                 Timestamp = DateTime.UtcNow,
                 AuctionId = auction.Id,
-                // UserId = userId  // We'll add this once AppUser is linked
             };
 
-            // 6. Update the auction's price
+            // Update the auction's price
             auction.CurrentPrice = bid.Amount;
 
-            // 7. Add the new bid to the context
+            // Add the new bid to the context
             _context.Bids.Add(bid);
 
-            // 8. Save both changes to the database in one transaction
+            // Save both changes to the database in one transaction
             await _context.SaveChangesAsync();
 
             // We are now broadcasting the new bid to every client
@@ -76,7 +72,7 @@ namespace LiveBid.Api.Controllers
                 .Group($"auction-{auctionId}")
                 .SendAsync("ReceiveNewBid", bid); // "ReceiveNewBid" is the message name
 
-            // 9. Return the newly created bid
+            // Return the newly created bid
             return CreatedAtAction(nameof(PlaceBid), new { id = bid.Id }, bid);
         }
     }

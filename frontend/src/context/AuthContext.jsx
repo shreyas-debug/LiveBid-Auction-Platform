@@ -14,7 +14,6 @@ export const AuthProvider = ({ children }) => {
     return token && username ? { token, username } : null;
   });
 
-  //Create a 'login' function
   const login = (userData) => {
     // userData will be { token, username }
     localStorage.setItem('token', userData.token);
@@ -22,7 +21,6 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
-  //Create a 'logout' function
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');

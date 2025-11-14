@@ -2,12 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { getAuctionById, placeBid } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { useSignalR } from '../context/SignalRContext'; // Import hook
+import { useSignalR } from '../context/SignalRContext';
 
 function AuctionDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
-  const { connection, isConnected } = useSignalR(); // 1. Get connection and status
+  const { connection, isConnected } = useSignalR();
   
   const [auction, setAuction] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -35,20 +35,16 @@ function AuctionDetailPage() {
     fetchAuction();
   }, [fetchAuction]);
 
-  // --- 2. NEW SIGNALR useEffect ---
   // This effect runs ONLY when the connection is fully established
   useEffect(() => {
     if (isConnected) {
       console.log("SignalR Page: Connection is 'Connected'. Setting up listeners.");
       
-      // 3. Join the auction group
       connection.invoke("JoinAuctionGroup", id)
         .catch(e => console.error("Error joining group: ", e));
-
-      // 4. Listen for "ReceiveNewBid"
       connection.on("ReceiveNewBid", (newBid) => {
         console.log("New bid received!", newBid);
-        // We must use a function here to get the "latest" auction state
+
         setAuction(currentAuction => {
           if (!currentAuction) return null;
           return {
@@ -62,17 +58,15 @@ function AuctionDetailPage() {
         });
       });
       
-      // 5. Listen for "UserJoined"
       connection.on("UserJoined", (message) => {
         console.log(message);
       });
       
-      // 6. Listen for "UserLeft"
       connection.on("UserLeft", (message) => {
         console.log(message);
       });
 
-      // 7. Clean up when the component unmounts
+      // Clean up when the component unmounts
       return () => {
         console.log("SignalR Page: Cleaning up listeners.");
         if (connection) {
@@ -108,7 +102,6 @@ function AuctionDetailPage() {
     }
   };
 
-  // --- JSX (no changes) ---
   if (loading) return <p>Loading auction...</p>;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
   if (!auction) return <p>Auction not found.</p>;
@@ -118,7 +111,6 @@ function AuctionDetailPage() {
   return (
     <div>
       <h2>{auction.itemName}</h2>
-      {/* ... rest of your JSX ... */}
       {user ? (
         <form className="bidding-form" onSubmit={handleSubmitBid}>
           <h4>Place Your Bid</h4>

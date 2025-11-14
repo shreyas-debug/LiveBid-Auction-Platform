@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getAuctions } from '../services/api'; //Import getAuctions
-import AuctionCard from '../components/AuctionCard'; //Import our new component
+import { getAuctions } from '../services/api';
+import AuctionCard from '../components/AuctionCard';
 
 function HomePage() {
   //Create state to hold our list of auctions

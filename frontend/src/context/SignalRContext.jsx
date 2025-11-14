@@ -8,7 +8,7 @@ export const useSignalR = () => useContext(SignalRContext);
 
 export const SignalRProvider = ({ children }) => {
   const [connection, setConnection] = useState(null);
-  const [isConnected, setIsConnected] = useState(false); // 1. Add connected status
+  const [isConnected, setIsConnected] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -26,11 +26,11 @@ export const SignalRProvider = ({ children }) => {
       newConnection.start()
         .then(() => {
           console.log("SignalR Context: Connection Started!");
-          setIsConnected(true); // 2. Set connected to true
+          setIsConnected(true);
         })
         .catch(e => console.error("SignalR Context: Connection Failed!", e));
 
-      // 3. This cleanup runs when the component unmounts
+      // This cleanup runs when the component unmounts
       return () => {
         console.log("SignalR Context: Stopping connection...");
         setIsConnected(false);
@@ -47,7 +47,6 @@ export const SignalRProvider = ({ children }) => {
   }, [user]); // This effect runs when 'user' logs in/out
 
   return (
-    // 4. Provide both connection and status
     <SignalRContext.Provider value={{ connection, isConnected }}>
       {children}
     </SignalRContext.Provider>

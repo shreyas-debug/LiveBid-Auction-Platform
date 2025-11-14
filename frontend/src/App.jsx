@@ -1,10 +1,10 @@
 import React from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom'; //Import useNavigate
+import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
 import AuctionDetailPage from './pages/AuctionDetailPage';
-import { useAuth } from './context/AuthContext'; //Import useAuth
+import { useAuth } from './context/AuthContext';
 
 function App() {
   const { user, logout } = useAuth(); //Get user and logout from context
@@ -12,7 +12,7 @@ function App() {
 
   const handleLogout = () => {
     logout();
-    navigate('/login'); // Redirect to login after logout
+    navigate('/login');
   };
 
   return (

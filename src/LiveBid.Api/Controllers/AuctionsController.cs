@@ -8,13 +8,10 @@ namespace LiveBid.Api.Controllers
 {
     [ApiController]
     [Route("api/auctions")]
-    public class AuctionsController : ControllerBase // Our class inherits from ControllerBase
+    public class AuctionsController : ControllerBase
     {
         private readonly AuctionDbContext _context;
 
-        // This is the CONSTRUCTOR. This is where Dependency Injection happens!
-        // ASP.NET will see this and automatically "inject" the 
-        // AuctionDbContext service we registered in Program.cs.
         public AuctionsController(AuctionDbContext context)
         {
             _context = context;
@@ -54,31 +51,22 @@ namespace LiveBid.Api.Controllers
             return auction;
         }
 
-        // This method will create a new auction.
         [Authorize]
         [HttpPost]
         public async Task<ActionResult<Auction>> CreateAuction(Auction auction)
         {
-            // ASP.NET automatically takes the JSON from the request body
-            // and converts it into an 'Auction' C# object for us.
-
-            // --- We set the server-side values ---
-            // (We don't trust the client to send a correct Id or Status)
+            // Set initial values for the new auction
             auction.Id = Guid.NewGuid();
             auction.Status = AuctionStatus.Pending; // All new auctions start as 'Pending'
-            auction.CurrentPrice = auction.StartingPrice; // The first price is the starting price
+            auction.CurrentPrice = auction.StartingPrice;
 
-            // 1. Add the new auction object to EF Core's "in-memory" tracking.
+            // Add the new auction object to EF Core's "in-memory" tracking.
             _context.Auctions.Add(auction);
 
-            // 2. 'await' the save. This is the moment EF Core generates
-            //    the SQL 'INSERT' command and sends it to the database.
+            // 'await' the save. This is the moment EF Core generates the SQL 'INSERT' command and sends it to the database.
             await _context.SaveChangesAsync();
 
-            // 3. Return a '201 Created' response. This is the HTTP standard.
-            // 'CreatedAtAction' is a helper that returns a 201 AND
-            // a 'Location' header pointing to the new item's URL
-            // (using the 'GetAuction' endpoint we just made).
+            // 'CreatedAtAction' is a helper that returns a 201 AND a 'Location' header pointing to the new item's URL
             return CreatedAtAction(nameof(GetAuction), new { id = auction.Id }, auction);
         }
     }
