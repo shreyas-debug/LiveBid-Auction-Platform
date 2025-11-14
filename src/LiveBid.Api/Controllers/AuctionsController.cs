@@ -37,20 +37,20 @@ namespace LiveBid.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Auction>> GetAuction(Guid id)
         {
-            // 'async Task' is the modern way to write asynchronous code.
-            // We 'await' the database call, which frees up the server
-            // to handle other requests while it waits.
-
-            // 'FindAsync' is a special EF Core method to find an item by its Primary Key (the 'Id').
-            var auction = await _context.Auctions.FindAsync(id);
+            // We use 'Include' to grab the 'Bids'
+            // and 'OrderByDescending' to show the newest bids first.
+            var auction = await _context.Auctions
+                .Include(a => a.Bids)
+                .FirstOrDefaultAsync(a => a.Id == id);
 
             if (auction == null)
             {
-                // If we didn't find the auction, return a standard 404 Not Found response.
                 return NotFound();
             }
 
-            // If we found it, return a 200 OK response with the auction object.
+            // We'll also sort the bids here for the client
+            auction.Bids = auction.Bids.OrderByDescending(b => b.Timestamp).ToList();
+
             return auction;
         }
 

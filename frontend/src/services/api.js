@@ -40,4 +40,8 @@ export const getAuctions = () => {
   return api.get('/api/auctions');
 };
 
+export const getAuctionById = (id) => {
+  return api.get(`/api/auctions/${id}`);
+};
+
 export default api;
