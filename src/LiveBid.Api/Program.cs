@@ -52,14 +52,33 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
+            ValidateIssuer = false,
+            ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                Encoding.UTF8.GetBytes(jwtKey!))
+        };
+
+        // This tells SignalR how to find the token
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+
+                // If the request is for our hub...
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    (path.StartsWithSegments("/auctionHub")))
+                {
+                    // Read the token from the query string
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -71,7 +90,12 @@ builder.Services.AddControllers()
         // This tells the serializer to handle object cycles
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
     });
-builder.Services.AddSignalR(); // This adds SignalR services
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options =>
+    {
+        // It tells SignalR's serializer how to handle circular references.
+        options.PayloadSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    }); // This adds SignalR services
 builder.Services.AddEndpointsApiExplorer(); // This is needed by Swagger
 builder.Services.AddSwaggerGen(options =>
 {

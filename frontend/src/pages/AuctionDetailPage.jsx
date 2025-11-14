@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { getAuctionById, placeBid } from '../services/api'; //Import placeBid
-import { useAuth } from '../context/AuthContext'; //Import useAuth to check if user is logged in
+import { getAuctionById, placeBid } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { useSignalR } from '../context/SignalRContext'; // Import hook
 
 function AuctionDetailPage() {
   const { id } = useParams();
+  const { user } = useAuth();
+  const { connection, isConnected } = useSignalR(); // 1. Get connection and status
+  
   const [auction, setAuction] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // --- Add state for our new form ---
   const [bidAmount, setBidAmount] = useState('');
   const [bidError, setBidError] = useState(null);
-  const { user } = useAuth(); // Get the current user
 
-  // This function fetches the auction data
-  const fetchAuction = async () => {
+  // Function to fetch initial data
+  const fetchAuction = useCallback(async () => {
     try {
-      setLoading(true);
       const response = await getAuctionById(id);
       setAuction(response.data);
       setError(null);
@@ -27,46 +27,88 @@ function AuctionDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  //Run the fetch function when the component loads
+  // useEffect for initial data load
   useEffect(() => {
+    setLoading(true);
     fetchAuction();
-  }, [id]); // [id] means "re-run this if the id in the URL changes"
+  }, [fetchAuction]);
 
-  // --- Create the form submission handler ---
+  // --- 2. NEW SIGNALR useEffect ---
+  // This effect runs ONLY when the connection is fully established
+  useEffect(() => {
+    if (isConnected) {
+      console.log("SignalR Page: Connection is 'Connected'. Setting up listeners.");
+      
+      // 3. Join the auction group
+      connection.invoke("JoinAuctionGroup", id)
+        .catch(e => console.error("Error joining group: ", e));
+
+      // 4. Listen for "ReceiveNewBid"
+      connection.on("ReceiveNewBid", (newBid) => {
+        console.log("New bid received!", newBid);
+        // We must use a function here to get the "latest" auction state
+        setAuction(currentAuction => {
+          if (!currentAuction) return null;
+          return {
+            ...currentAuction,
+            currentPrice: newBid.amount,
+            bids: {
+              ...currentAuction.bids,
+              $values: [newBid, ...(currentAuction.bids?.$values || [])]
+            }
+          };
+        });
+      });
+      
+      // 5. Listen for "UserJoined"
+      connection.on("UserJoined", (message) => {
+        console.log(message);
+      });
+      
+      // 6. Listen for "UserLeft"
+      connection.on("UserLeft", (message) => {
+        console.log(message);
+      });
+
+      // 7. Clean up when the component unmounts
+      return () => {
+        console.log("SignalR Page: Cleaning up listeners.");
+        if (connection) {
+          connection.invoke("LeaveAuctionGroup", id);
+          connection.off("ReceiveNewBid");
+          connection.off("UserJoined");
+          connection.off("UserLeft");
+        }
+      };
+    }
+  }, [isConnected, connection, id]); // Re-run if any of these change
+
+  // --- HandleSubmitBid function ---
   const handleSubmitBid = async (e) => {
     e.preventDefault();
     setBidError(null);
-
-    // Convert the bidAmount to a number
     const amount = parseFloat(bidAmount);
+
     if (isNaN(amount) || amount <= 0) {
       setBidError('Please enter a valid bid amount.');
       return;
     }
 
     try {
-      // Call our new API function
       await placeBid(id, amount);
-      
-      // SUCCESS!
-      setBidAmount(''); // Clear the input box
+      setBidAmount('');
       setBidError(null);
-      alert('Bid placed successfully!');
-      
-      //Refresh the auction data to show the new price and bid history
-      fetchAuction(); 
-
+      // We don't call fetchAuction()! SignalR will handle the update.
     } catch (err) {
       console.error(err);
-      // Get the error message from the backend (e.g., "Bid must be higher")
       const message = err.response?.data?.errors?.Amount || err.response?.data || 'Failed to place bid.';
       setBidError(message);
     }
   };
 
-  // ... (loading/error messages)
+  // --- JSX (no changes) ---
   if (loading) return <p>Loading auction...</p>;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
   if (!auction) return <p>Auction not found.</p>;
@@ -76,11 +118,8 @@ function AuctionDetailPage() {
   return (
     <div>
       <h2>{auction.itemName}</h2>
-      <p>{auction.description}</p>
-      <h3>Current Price: ${auction.currentPrice}</h3>
-      <p><strong>Ends:</strong> {new Date(auction.endTime).toLocaleString()}</p>
-
-      {user ? ( // Only show the form if the user is logged in
+      {/* ... rest of your JSX ... */}
+      {user ? (
         <form className="bidding-form" onSubmit={handleSubmitBid}>
           <h4>Place Your Bid</h4>
           <input
@@ -97,7 +136,6 @@ function AuctionDetailPage() {
         <p>Please log in to place a bid.</p>
       )}
 
-      {/* ... (existing bid history section) ... */}
       <div className="bid-history">
         <h4>Bid History</h4>
         {bids.length > 0 ? (
