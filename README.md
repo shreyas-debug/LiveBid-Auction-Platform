@@ -4,6 +4,16 @@ This is a full-stack web application that allows users to create, browse, and bi
 
 This project was built to demonstrate a modern, secure, and event-driven architecture using a .NET 8 backend with SignalR and a responsive React frontend.
 
+## 📋 Table of Contents
+
+- [Key Features](#-key-features)
+- [Tech Stack](#-tech-stack)
+- [Architecture](#-architecture)
+- [Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Backend Setup](#1-backend-setup)
+  - [Frontend Setup](#2-frontend-setup)
+
 ## 🚀 Key Features
 
 - **Real-time Bidding**: Utilizes SignalR and WebSockets to push new bids to all clients instantly.
@@ -48,22 +58,22 @@ To get a local copy up and running, follow these steps.
 
 ### Prerequisites
 
-You will need the following tools installed on your machine:
+Before you begin, ensure you have the following installed on your machine:
 
-- .NET 8 SDK
-- Node.js (LTS) (which includes npm)
-- PostgreSQL (A running local instance)
+- **.NET 8 SDK** - [Download here](https://dotnet.microsoft.com/download)
+- **Node.js (LTS)** - [Download here](https://nodejs.org/) (includes npm)
+- **PostgreSQL** - [Download here](https://www.postgresql.org/download/) (a running local instance)
 
 ### 1. Backend Setup
 
-**Clone the repository:**
+#### Clone the Repository
 
 ```bash
 git clone https://github.com/YourUsername/LiveBid.git
 cd LiveBid
 ```
 
-**Configure your secrets:**
+#### Configure Your Secrets
 
 1. Navigate to the backend project: `cd src/LiveBid.Api`
 2. Create a file named `appsettings.Development.json`.
@@ -82,7 +92,7 @@ cd LiveBid
 }
 ```
 
-**Create the database:**
+#### Create the Database
 
 Run the Entity Framework migrations to create your database and tables:
 
@@ -90,15 +100,17 @@ Run the Entity Framework migrations to create your database and tables:
 dotnet ef database update
 ```
 
-**Run the backend:**
+#### Run the Backend
 
 ```bash
 dotnet run
 ```
 
-Your backend API will now be running at http://localhost:5134. You can view the API documentation at http://localhost:5134/swagger.
+Your backend API will now be running at **http://localhost:5134**. You can view the API documentation at **http://localhost:5134/swagger**.
 
 ### 2. Frontend Setup
+
+#### Install Dependencies
 
 1. Open a new terminal.
 2. Navigate to the frontend folder:
@@ -113,14 +125,22 @@ cd frontend
 npm install
 ```
 
-4. Run the frontend:
+#### Run the Frontend
 
 ```bash
 npm run dev
 ```
 
-Your React application will now be running at http://localhost:5173 (or a similar port).
+Your React application will now be running at **http://localhost:5173** (or a similar port).
 
 ### 3. You're Ready!
 
-Open http://localhost:5173 in your browser. You can now register a new user, log in, and test the real-time bidding!
+Open **http://localhost:5173** in your browser. You can now register a new user, log in, and test the real-time bidding!
+
+---
+
+## 📝 Additional Notes
+
+- Make sure both the backend and frontend are running simultaneously for the application to work properly.
+- The backend API must be running before the frontend can connect to it.
+- Check the browser console and terminal for any error messages if you encounter issues.
