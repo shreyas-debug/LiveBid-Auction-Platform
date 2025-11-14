@@ -44,4 +44,9 @@ export const getAuctionById = (id) => {
   return api.get(`/api/auctions/${id}`);
 };
 
+export const placeBid = (auctionId, amount) => {
+  // The backend expects a BidDto object: { "amount": 200 }
+  return api.post(`/api/auctions/${auctionId}/bids`, { amount });
+};
+
 export default api;
