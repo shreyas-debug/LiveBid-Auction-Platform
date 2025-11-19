@@ -19,7 +19,7 @@ COPY . .
 # 4. Build Frontend Explicitly (Ensures it exists)
 WORKDIR /src/frontend
 RUN npm install
-RUN npm run build
+RUN npm run build -- --outDir dist
 
 # 5. Publish Backend
 WORKDIR "/src/src/LiveBid.Api"
