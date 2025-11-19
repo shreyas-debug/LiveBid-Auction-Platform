@@ -137,12 +137,18 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AuctionDbContext>();
+        // Log connection string attempt (masked)
+        var connStr = context.Database.GetConnectionString();
+        Console.WriteLine($"Attempting to connect to DB with: {connStr?.Split(';').FirstOrDefault()}..."); 
+        
         context.Database.Migrate(); // Applies any pending migrations
+        Console.WriteLine("Database migration successful.");
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An error occurred while migrating the database.");
+        throw; // Crash the app if DB migration fails so we know
     }
 }
 // ---------------------------
@@ -165,6 +171,28 @@ app.UseStaticFiles();
 
 app.MapControllers();
 app.MapHub<AuctionHub>("/auctionHub");
+
+// --- HEALTH CHECK ENDPOINT ---
+app.MapGet("/api/health", async (AuctionDbContext db) =>
+{
+    try
+    {
+        // Try to connect to the database
+        if (await db.Database.CanConnectAsync())
+        {
+            return Results.Ok(new { status = "Healthy", database = "Connected" });
+        }
+        else
+        {
+            return Results.Problem("Database connection failed", statusCode: 500);
+        }
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Database error: {ex.Message}", statusCode: 500);
+    }
+});
+// -----------------------------
 
 // Handle client-side routing
 app.MapFallbackToFile("index.html");
