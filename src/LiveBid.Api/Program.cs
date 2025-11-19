@@ -140,8 +140,15 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowReactApp");
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
 
+// Serve static files (React App)
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+app.MapControllers();
 app.MapHub<AuctionHub>("/auctionHub");
+
+// Handle client-side routing
+app.MapFallbackToFile("index.html");
 
 app.Run();
