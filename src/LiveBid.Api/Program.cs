@@ -129,6 +129,24 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+// --- AUTOMATIC MIGRATION ---
+// This ensures the database exists and has the latest schema
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<AuctionDbContext>();
+        context.Database.Migrate(); // Applies any pending migrations
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+    }
+}
+// ---------------------------
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
