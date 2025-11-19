@@ -23,8 +23,9 @@ namespace LiveBid.Api.Controllers
         {
             // This finds all auctions that are not finished
             var activeAuctions = await _context.Auctions
-                .Where(a => a.Status != AuctionStatus.Finished)
-                .OrderBy(a => a.EndTime)
+                // Sort by: Active first (Status 1), then by EndTime (soonest first)
+                .OrderByDescending(a => a.Status == AuctionStatus.Active) 
+                .ThenBy(a => a.EndTime)
                 .ToListAsync();
                 
             return Ok(activeAuctions);
@@ -51,6 +52,44 @@ namespace LiveBid.Api.Controllers
             return auction;
         }
 
+        // POST: /api/auctions (Admin only)
+        [Authorize(Roles = "Admin")] 
+        [HttpPost]
+        public async Task<ActionResult<Auction>> CreateAuction(AuctionDto auctionDto)
+        {
+            var auction = new Auction
+            {
+                Id = Guid.NewGuid(),
+                ItemName = auctionDto.ItemName,
+                Description = auctionDto.Description,
+                ImageUrl = auctionDto.ImageUrl, // <--- Save ImageUrl
+                StartingPrice = auctionDto.StartingPrice,
+                CurrentPrice = auctionDto.StartingPrice,
+                StartTime = auctionDto.StartTime,
+                EndTime = auctionDto.EndTime,
+                Status = AuctionStatus.Active
+            };
+
+            _context.Auctions.Add(auction);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetAuction), new { id = auction.Id }, auction);
+        }
+
+        // DELETE: /api/auctions/{id} (Admin only)
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAuction(Guid id)
+        {
+            var auction = await _context.Auctions.FindAsync(id);
+            if (auction == null) return NotFound();
+
+            _context.Auctions.Remove(auction);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
         [Authorize]
         [HttpPost]
         public async Task<ActionResult<Auction>> CreateAuction(Auction auction)
@@ -69,5 +108,16 @@ namespace LiveBid.Api.Controllers
             // 'CreatedAtAction' is a helper that returns a 201 AND a 'Location' header pointing to the new item's URL
             return CreatedAtAction(nameof(GetAuction), new { id = auction.Id }, auction);
         }
+        
+    }
+
+    public class AuctionDto
+    {
+        public string ItemName { get; set; }
+        public string Description { get; set; }
+        public string? ImageUrl { get; set; }
+        public decimal StartingPrice { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
     }
 }

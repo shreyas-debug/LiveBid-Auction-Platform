@@ -37,6 +37,7 @@ builder.Services.AddIdentityCore<AppUser>(options =>
     options.Password.RequireUppercase = false;
     options.Password.RequiredLength = 6;
 })
+.AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<AuctionDbContext>()
 .AddSignInManager<SignInManager<AppUser>>();
 

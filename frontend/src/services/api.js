@@ -44,6 +44,15 @@ export const getAuctionById = (id) => {
   return api.get(`/api/auctions/${id}`);
 };
 
+// DELETE /api/auctions/{id}
+export const deleteAuction = (id) => {
+  return api.delete(`/api/auctions/${id}`);
+};
+
+export const getMyBids = () => {
+  return api.get('/api/bids/my-bids');
+};
+
 export const placeBid = (auctionId, amount) => {
   // The backend expects a BidDto object: { "amount": 200 }
   return api.post(`/api/auctions/${auctionId}/bids`, { amount });

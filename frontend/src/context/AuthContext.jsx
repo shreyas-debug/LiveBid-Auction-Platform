@@ -1,24 +1,66 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
-//Create the context
 const AuthContext = createContext(null);
 
-// Create the "Provider" component
-// This component will wrap our entire app and "provide" auth data
 export const AuthProvider = ({ children }) => {
-  //Use 'useState' to store the user's data
-  // We check localStorage to see if the user is already logged in
-  const [user, setUser] = useState(() => {
+  const [user, setUser] = useState(null);
+
+  // Helper to parse JWT
+  const parseJwt = (token) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      return null;
+    }
+  };
+
+  // Helper to find the role claim, no matter the key name
+  const getRoleFromDecodedToken = (decoded) => {
+    if (!decoded) return null;
+    
+    // Check standard claim names
+    if (decoded.role) return decoded.role;
+    if (decoded.Role) return decoded.Role;
+    
+    // Check the long ASP.NET Identity claim name
+    // This is the most likely one
+    const identityRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+    if (identityRole) return identityRole;
+
+    return null;
+  };
+
+  useEffect(() => {
     const token = localStorage.getItem('token');
     const username = localStorage.getItem('username');
-    return token && username ? { token, username } : null;
-  });
+    
+    if (token && username) {
+      const decoded = parseJwt(token);
+      const role = getRoleFromDecodedToken(decoded);
+      
+      console.log("Auth Init - Decoded Token:", decoded); // DEBUG LOG
+      console.log("Auth Init - Extracted Role:", role);   // DEBUG LOG
+      
+      setUser({ token, username, role });
+    }
+  }, []);
 
   const login = (userData) => {
-    // userData will be { token, username }
     localStorage.setItem('token', userData.token);
     localStorage.setItem('username', userData.username);
-    setUser(userData);
+    
+    const decoded = parseJwt(userData.token);
+    const role = getRoleFromDecodedToken(decoded);
+
+    console.log("Login - Decoded Token:", decoded); // DEBUG LOG
+    console.log("Login - Extracted Role:", role);   // DEBUG LOG
+
+    setUser({ ...userData, role });
   };
 
   const logout = () => {
@@ -27,7 +69,6 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  //Pass the user data and functions to the app
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
       {children}
@@ -35,7 +76,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-//Create a custom "hook" to easily access the context
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);

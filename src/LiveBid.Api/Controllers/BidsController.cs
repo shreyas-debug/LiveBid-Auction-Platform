@@ -22,6 +22,23 @@ namespace LiveBid.Api.Controllers
             _hubContext = hubContext;
         }
 
+        // GET: /api/bids/my-bids
+        [Authorize]
+        [HttpGet("bids/my-bids")]
+        public async Task<ActionResult<IEnumerable<Bid>>> GetMyBids()
+        {
+            var username = User.Identity?.Name;
+            if (username == null) return Unauthorized();
+
+            var myBids = await _context.Bids
+                .Include(b => b.Auction) // Include auction details so we can show item name
+                .Where(b => b.BidderUsername == username)
+                .OrderByDescending(b => b.Timestamp)
+                .ToListAsync();
+
+            return Ok(myBids);
+        }
+
         // POST /api/auctions/{auctionId}/bids
         [Authorize] // A user MUST be logged in to bid.
         [HttpPost("auctions/{auctionId}/bids")]
@@ -47,6 +64,7 @@ namespace LiveBid.Api.Controllers
             // Get the ID of the user who is placing the bid.
             // The 'User' object is available because we used [Authorize]
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var username = User.Identity?.Name;
 
             // Create the new Bid object
             var bid = new Bid
@@ -55,6 +73,7 @@ namespace LiveBid.Api.Controllers
                 Amount = bidDto.Amount,
                 Timestamp = DateTime.UtcNow,
                 AuctionId = auction.Id,
+                BidderUsername = username ?? "Anonymous"
             };
 
             // Update the auction's price

@@ -7,5 +7,6 @@
         public DateTime Timestamp { get; set; }
         public Guid AuctionId { get; set; }
         public Auction Auction { get; set; }
+        public string? BidderUsername { get; set; }
     }
 }

@@ -12,11 +12,13 @@ namespace LiveBid.Api.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly TokenService _tokenService;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         // Inject the Identity services
         public AuthController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,
-                              TokenService tokenService)
+                              TokenService tokenService, RoleManager<IdentityRole> roleManager)
         {
+            _roleManager = roleManager;
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
@@ -33,14 +35,20 @@ namespace LiveBid.Api.Controllers
                 Email = registerDto.Email
             };
 
-            // 'CreateAsync' hashes the password and saves the user
             var result = await _userManager.CreateAsync(user, registerDto.Password);
 
-            if (!result.Succeeded)
+            if (!result.Succeeded) return BadRequest(result.Errors);
+
+            // --- NEW LOGIC: Assign Admin Role ---
+            if (registerDto.Email.EndsWith("@admin.com"))
             {
-                // If it failed (e.g., duplicate username), return the errors
-                return BadRequest(result.Errors);
+                // Ensure role exists first (safety check)
+                if (!await _roleManager.RoleExistsAsync("Admin"))
+                    await _roleManager.CreateAsync(new IdentityRole("Admin"));
+                    
+                await _userManager.AddToRoleAsync(user, "Admin");
             }
+            // ------------------------------------
 
             return Ok(new { Message = "Registration successful" });
         }
@@ -69,7 +77,7 @@ namespace LiveBid.Api.Controllers
             return new UserDto
             {
                 Username = user.UserName,
-                Token = _tokenService.CreateToken(user)
+                Token = await _tokenService.CreateToken(user)
             };
         }
     }

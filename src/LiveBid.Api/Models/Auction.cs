@@ -14,6 +14,7 @@ namespace LiveBid.Api.Models
         public Guid Id { get; set; }
         public string ItemName { get; set; }
         public string Description { get; set; }
+        public string? ImageUrl { get; set; }
         public decimal StartingPrice { get; set; }
         public decimal CurrentPrice { get; set; }
         public DateTime StartTime { get; set; }
