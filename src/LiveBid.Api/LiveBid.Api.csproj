@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <SpaRoot>../../frontend</SpaRoot>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,10 +18,31 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
   </ItemGroup>
+
   <ItemGroup>
-	<Content Update="appsettings.Development.json">
-		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	</Content>
+    <Content Update="appsettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
+
+  <Target Name="EnsureNodeModulesInstalled" BeforeTargets="Build">
+    <Message Importance="high" Text="Restoring frontend NPM packages..." />
+    <Exec Command="npm install" WorkingDirectory="$(SpaRoot)" Condition="!Exists('$(SpaRoot)/node_modules')" />
+  </Target>
+
+  <Target Name="PublishReactApp" AfterTargets="ComputeFilesToPublish">
+    <Message Importance="high" Text="Building frontend app for production..." />
+    <Exec Command="npm install" WorkingDirectory="$(SpaRoot)" />
+    <Exec Command="npm run build" WorkingDirectory="$(SpaRoot)" />
+
+    <ItemGroup>
+      <DistFiles Include="$(SpaRoot)/dist/**" />
+      <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>wwwroot\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
 
 </Project>
