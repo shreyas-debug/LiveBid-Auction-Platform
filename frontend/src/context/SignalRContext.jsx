@@ -3,6 +3,9 @@ import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import { useAuth } from './AuthContext';
 
 const SignalRContext = createContext(null);
+// Determine base URL dynamically
+  const baseUrl = import.meta.env.VITE_API_URL || 'https://livebid-auction-platform-production.up.railway.app';
+  const hubUrl = `${baseUrl}/auctionHub`;
 
 export const useSignalR = () => useContext(SignalRContext);
 
@@ -14,7 +17,7 @@ export const SignalRProvider = ({ children }) => {
   useEffect(() => {
     if (user && user.token) {
       const newConnection = new HubConnectionBuilder()
-        .withUrl("http://localhost:5134/auctionHub", {
+        .withUrl(hubUrl, {
           accessTokenFactory: () => user.token
         })
         .withAutomaticReconnect()

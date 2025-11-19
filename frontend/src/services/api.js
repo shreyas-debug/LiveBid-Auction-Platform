@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5134'; 
+const API_URL = import.meta.env.VITE_API_URL || 'https://livebid-auction-platform-production.up.railway.app';
 
 const api = axios.create({
   baseURL: API_URL,
