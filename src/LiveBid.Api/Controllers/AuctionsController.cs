@@ -124,25 +124,6 @@ namespace LiveBid.Api.Controllers
             return NoContent();
         }
 
-        [Authorize]
-        [HttpPost]
-        public async Task<ActionResult<Auction>> CreateAuction(Auction auction)
-        {
-            // Set initial values for the new auction
-            auction.Id = Guid.NewGuid();
-            auction.Status = AuctionStatus.Pending; // All new auctions start as 'Pending'
-            auction.CurrentPrice = auction.StartingPrice;
-
-            // Add the new auction object to EF Core's "in-memory" tracking.
-            _context.Auctions.Add(auction);
-
-            // 'await' the save. This is the moment EF Core generates the SQL 'INSERT' command and sends it to the database.
-            await _context.SaveChangesAsync();
-
-            // 'CreatedAtAction' is a helper that returns a 201 AND a 'Location' header pointing to the new item's URL
-            return CreatedAtAction(nameof(GetAuction), new { id = auction.Id }, auction);
-        }
-        
     }
 
     public class AuctionDto
