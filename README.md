@@ -19,8 +19,10 @@ This project was built to demonstrate a modern, secure, and event-driven archite
 - **Real-time Bidding**: Utilizes SignalR and WebSockets to push new bids to all clients instantly.
 - **Secure Authentication**: Full user registration and login system built with ASP.NET Core Identity.
 - **Protected API**: Uses JWT (JSON Web Tokens) for stateless, secure API endpoints.
-- **Auction & Bid Management**: Full CRUD (Create, Read, Update) functionality for auctions and bids.
+- **Auction & Bid Management**: Full CRUD (Create, Read, Update) functionality for auctions and bids, plus automatic “sold out” detection that announces the winning bidder once an auction ends.
 - **Bid Validation**: Backend logic ensures bids are valid (e.g., must be higher than the current price).
+- **Post-Auction Lockdown**: Finished auctions are locked server-side; late bids are rejected with a friendly error.
+- **Automatic Database Seeding**: On first boot the API seeds sample auctions as well as an admin account (configurable via `SeedAdmin` settings) so the app is usable instantly in new environments.
 - **Global State Management**: Uses React Context to manage user authentication and the SignalR connection across the frontend application.
 - **Automatic Token Handling**: A secure axios interceptor automatically attaches the JWT to all protected API requests.
 
@@ -141,6 +143,7 @@ Open **http://localhost:5173** in your browser. You can now register a new user,
 
 ## 📝 Additional Notes
 
+- **Sold-Out View:** When an auction’s `EndTime` passes, the detail page automatically switches to a “Sold Out” state, showing the winning username and bid amount. Further bids are blocked server-side.
+- **Health & Migrations:** The API runs a quick health check at `/api/health` and applies EF migrations during startup by default. For resource-constrained environments you can move migrations to CI/CD and drop the runtime migrate block.
 - Make sure both the backend and frontend are running simultaneously for the application to work properly.
-- The backend API must be running before the frontend can connect to it.
 - Check the browser console and terminal for any error messages if you encounter issues.
