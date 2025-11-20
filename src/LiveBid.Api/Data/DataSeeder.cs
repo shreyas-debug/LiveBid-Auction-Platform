@@ -58,20 +58,15 @@ public static class DataSeeder
     {
         var context = services.GetRequiredService<AuctionDbContext>();
 
-        if (await context.Auctions.AnyAsync())
-        {
-            return;
-        }
-
         var now = DateTime.UtcNow;
-        var auctions = new List<Auction>
+        var templates = new List<Auction>
         {
             new()
             {
                 Id = Guid.NewGuid(),
                 ItemName = "Vintage Camera",
                 Description = "Classic 35mm film camera in mint condition.",
-                ImageUrl = "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
+                ImageUrl = "https://images.unsplash.com/photo-1495121553079-4c61bcce1894",
                 StartingPrice = 150m,
                 CurrentPrice = 150m,
                 StartTime = now,
@@ -83,7 +78,7 @@ public static class DataSeeder
                 Id = Guid.NewGuid(),
                 ItemName = "Gaming Laptop",
                 Description = "RTX 4070, 16GB RAM, 1TB SSD. Perfect for AAA titles.",
-                ImageUrl = "https://images.unsplash.com/photo-1517336714731-489689fd1ca8",
+                ImageUrl = "https://images.unsplash.com/photo-1630794180018-433d915c34ac",
                 StartingPrice = 1200m,
                 CurrentPrice = 1200m,
                 StartTime = now,
@@ -95,7 +90,7 @@ public static class DataSeeder
                 Id = Guid.NewGuid(),
                 ItemName = "Artisan Coffee Kit",
                 Description = "Hand grinder, pour-over set, and premium beans.",
-                ImageUrl = "https://images.unsplash.com/photo-1470337458703-46ad1756a187",
+                ImageUrl = "https://images.unsplash.com/photo-1637029436347-e33bf98a5412",
                 StartingPrice = 80m,
                 CurrentPrice = 80m,
                 StartTime = now,
@@ -104,7 +99,25 @@ public static class DataSeeder
             }
         };
 
-        await context.Auctions.AddRangeAsync(auctions);
+        foreach (var template in templates)
+        {
+            var existing = await context.Auctions.FirstOrDefaultAsync(a => a.ItemName == template.ItemName);
+            if (existing == null)
+            {
+                await context.Auctions.AddAsync(template);
+            }
+            else
+            {
+                existing.Description = template.Description;
+                existing.ImageUrl = template.ImageUrl;
+                existing.StartingPrice = template.StartingPrice;
+                existing.CurrentPrice = template.CurrentPrice;
+                existing.StartTime = template.StartTime;
+                existing.EndTime = template.EndTime;
+                existing.Status = template.Status;
+            }
+        }
+
         await context.SaveChangesAsync();
     }
 }
