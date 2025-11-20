@@ -48,13 +48,13 @@ function UserProfilePage() {
               {bids.map((bid) => (
                 <tr key={bid.$id || bid.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
-                    {bid.auction?.itemName || "Unknown Item"}
+                    {bid.auctionItemName || "Unknown Item"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">
                     ${bid.amount}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(bid.timestamp).toLocaleDateString()}
+                    {bid.timestamp ? new Date(bid.timestamp).toLocaleDateString() : "Invalid Date"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <Link to={`/auctions/${bid.auctionId}`} className="text-indigo-600 hover:text-indigo-900">View Item</Link>

@@ -25,15 +25,23 @@ namespace LiveBid.Api.Controllers
         // GET: /api/bids/my-bids
         [Authorize]
         [HttpGet("bids/my-bids")]
-        public async Task<ActionResult<IEnumerable<Bid>>> GetMyBids()
+        public async Task<ActionResult<IEnumerable<BidHistoryDto>>> GetMyBids()
         {
             var username = User.Identity?.Name;
             if (username == null) return Unauthorized();
 
             var myBids = await _context.Bids
-                .Include(b => b.Auction) // Include auction details so we can show item name
                 .Where(b => b.BidderUsername == username)
                 .OrderByDescending(b => b.Timestamp)
+                .Select(b => new BidHistoryDto
+                {
+                    Id = b.Id,
+                    Amount = b.Amount,
+                    Timestamp = b.Timestamp,
+                    AuctionId = b.AuctionId,
+                    AuctionItemName = b.Auction.ItemName,
+                    AuctionImageUrl = b.Auction.ImageUrl
+                })
                 .ToListAsync();
 
             return Ok(myBids);
@@ -93,7 +101,15 @@ namespace LiveBid.Api.Controllers
 
             // Return the newly created bid
             return CreatedAtAction(nameof(PlaceBid), new { id = bid.Id }, bid);
-        }
+    public class BidHistoryDto
+    {
+        public Guid Id { get; set; }
+        public decimal Amount { get; set; }
+        public DateTime Timestamp { get; set; }
+        public Guid AuctionId { get; set; }
+        public string? AuctionItemName { get; set; }
+        public string? AuctionImageUrl { get; set; }
+    }
     }
 
     // A DTO for the bid request
