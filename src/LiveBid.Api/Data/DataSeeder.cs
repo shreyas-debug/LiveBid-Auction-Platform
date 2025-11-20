@@ -132,12 +132,9 @@ public static class DataSeeder
             }
             else
             {
+                // Refresh descriptive fields only; preserve pricing/timing so live data stays intact.
                 existing.Description = template.Description;
                 existing.ImageUrl = template.ImageUrl;
-                existing.StartingPrice = template.StartingPrice;
-                existing.CurrentPrice = template.CurrentPrice;
-                existing.StartTime = template.StartTime;
-                existing.EndTime = template.EndTime;
                 existing.Status = template.Status;
             }
         }
