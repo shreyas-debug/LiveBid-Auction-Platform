@@ -101,6 +101,9 @@ namespace LiveBid.Api.Controllers
 
             // Return the newly created bid
             return CreatedAtAction(nameof(PlaceBid), new { id = bid.Id }, bid);
+        }
+    }
+
     public class BidHistoryDto
     {
         public Guid Id { get; set; }
@@ -109,7 +112,6 @@ namespace LiveBid.Api.Controllers
         public Guid AuctionId { get; set; }
         public string? AuctionItemName { get; set; }
         public string? AuctionImageUrl { get; set; }
-    }
     }
 
     // A DTO for the bid request
