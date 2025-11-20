@@ -4,6 +4,20 @@ import { getAuctionById, placeBid } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useSignalR } from '../context/SignalRContext';
 
+const normalizeBids = (rawBids) => {
+  if (!rawBids) return [];
+  if (Array.isArray(rawBids)) return rawBids;
+  if (Array.isArray(rawBids.$values)) return rawBids.$values;
+  return [];
+};
+
+const shapeBid = (bid) => ({
+  id: bid.id,
+  amount: bid.amount,
+  timestamp: bid.timestamp,
+  bidderUsername: bid.bidderUsername || bid.BidderUsername || 'Anonymous'
+});
+
 function AuctionDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -56,10 +70,12 @@ function AuctionDetailPage() {
         console.log("New bid received!", newBid);
         setAuction(prev => {
           if (!prev) return null;
+          const existing = normalizeBids(prev.bids);
+          const updated = [shapeBid(newBid), ...existing];
           return {
             ...prev,
             currentPrice: newBid.amount,
-            bids: [newBid, ...(prev.bids || [])]
+            bids: updated
           };
         });
       });
@@ -94,7 +110,7 @@ function AuctionDetailPage() {
   if (!auction) return <div className="text-center py-20 text-gray-500 text-xl">Auction not found.</div>;
 
   // Safe access to bids
-  const bids = auction.bids || [];
+  const bids = normalizeBids(auction.bids);
   const isSoldOut = auction.isSoldOut;
   const winningBidder = auction.winningBidder;
   const winningBidAmount = auction.winningBidAmount;
