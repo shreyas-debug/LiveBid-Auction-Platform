@@ -59,10 +59,7 @@ function AuctionDetailPage() {
           return {
             ...prev,
             currentPrice: newBid.amount,
-            bids: {
-              ...prev.bids,
-              $values: [newBid, ...(prev.bids?.$values || [])]
-            }
+            bids: [newBid, ...(prev.bids || [])]
           };
         });
       });
@@ -97,7 +94,7 @@ function AuctionDetailPage() {
   if (!auction) return <div className="text-center py-20 text-gray-500 text-xl">Auction not found.</div>;
 
   // Safe access to bids
-  const bids = auction.bids?.$values || [];
+  const bids = auction.bids || [];
   const isSoldOut = auction.isSoldOut;
   const winningBidder = auction.winningBidder;
   const winningBidAmount = auction.winningBidAmount;
@@ -131,15 +128,19 @@ function AuctionDetailPage() {
               {bids.length > 0 ? (
                 <div className="divide-y divide-gray-100">
                   {bids.map((bid, index) => (
-                    <div key={bid.$id || index} className="px-6 py-4 flex justify-between items-center hover:bg-gray-50 transition-colors duration-150">
+                    <div key={bid.id || index} className="px-6 py-4 flex justify-between items-center hover:bg-gray-50 transition-colors duration-150">
                       <div className="flex flex-col">
                         {/* SHOW USERNAME HERE */}
                         <span className="text-sm font-bold text-indigo-900">
                           {bid.bidderUsername || 'Anonymous'}
                         </span> 
-                        <span className="text-xs text-gray-500">{new Date(bid.timestamp).toLocaleTimeString()}</span>
+                        <span className="text-xs text-gray-500">
+                          {bid.timestamp ? new Date(bid.timestamp).toLocaleTimeString() : '—'}
+                        </span>
                       </div>
-                      <span className="text-lg font-bold text-gray-700 font-mono">${bid.amount}</span>
+                      <span className="text-lg font-bold text-gray-700 font-mono">
+                        {typeof bid.amount === 'number' ? `$${bid.amount}` : '—'}
+                      </span>
                     </div>
                   ))}
                   <div ref={historyEndRef} />

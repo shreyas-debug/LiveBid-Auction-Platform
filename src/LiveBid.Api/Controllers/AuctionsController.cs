@@ -52,9 +52,7 @@ namespace LiveBid.Api.Controllers
                 .ToList();
 
             var hasEnded = auction.EndTime <= DateTime.UtcNow || auction.Status == AuctionStatus.Finished;
-            var winningBid = orderedBids
-                .OrderByDescending(b => b.Amount)
-                .FirstOrDefault();
+            var winningBid = orderedBids.FirstOrDefault();
 
             if (hasEnded && auction.Status == AuctionStatus.Active)
             {
@@ -73,7 +71,13 @@ namespace LiveBid.Api.Controllers
                 StartTime = auction.StartTime,
                 EndTime = auction.EndTime,
                 Status = auction.Status,
-                Bids = orderedBids,
+                Bids = orderedBids.Select(b => new BidSummaryDto
+                {
+                    Id = b.Id,
+                    Amount = b.Amount,
+                    Timestamp = b.Timestamp,
+                    BidderUsername = b.BidderUsername ?? "Anonymous"
+                }).ToList(),
                 IsSoldOut = hasEnded,
                 WinningBidder = hasEnded ? winningBid?.BidderUsername : null,
                 WinningBidAmount = hasEnded ? winningBid?.Amount : null
@@ -162,9 +166,17 @@ namespace LiveBid.Api.Controllers
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public AuctionStatus Status { get; set; }
-        public List<Bid> Bids { get; set; } = new();
+        public List<BidSummaryDto> Bids { get; set; } = new();
         public bool IsSoldOut { get; set; }
         public string? WinningBidder { get; set; }
         public decimal? WinningBidAmount { get; set; }
+    }
+
+    public class BidSummaryDto
+    {
+        public Guid Id { get; set; }
+        public decimal Amount { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string? BidderUsername { get; set; }
     }
 }
