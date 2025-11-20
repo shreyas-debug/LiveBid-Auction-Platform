@@ -64,6 +64,12 @@ namespace LiveBid.Api.Controllers
             }
 
             // --- Validation Logic ---
+            var auctionHasEnded = auction.EndTime <= DateTime.UtcNow || auction.Status == AuctionStatus.Finished;
+            if (auctionHasEnded)
+            {
+                return BadRequest("This auction has already ended.");
+            }
+
             if (bidDto.Amount <= auction.CurrentPrice)
             {
                 return BadRequest("Your bid must be higher than the current price.");

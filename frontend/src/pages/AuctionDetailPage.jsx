@@ -98,6 +98,9 @@ function AuctionDetailPage() {
 
   // Safe access to bids
   const bids = auction.bids?.$values || [];
+  const isSoldOut = auction.isSoldOut;
+  const winningBidder = auction.winningBidder;
+  const winningBidAmount = auction.winningBidAmount;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
@@ -151,11 +154,38 @@ function AuctionDetailPage() {
         {/* RIGHT: Sticky Bid Panel */}
         <div className="lg:col-span-4">
           <div className="sticky top-24 bg-white p-8 rounded-3xl shadow-xl border border-indigo-50">
-            <p className="text-sm font-bold text-gray-400 uppercase">Current Price</p>
-            <p className="text-5xl font-extrabold text-indigo-600 mt-1">${auction.currentPrice}</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-gray-400 uppercase">
+                  {isSoldOut ? 'Final Price' : 'Current Price'}
+                </p>
+                <p className="text-5xl font-extrabold text-indigo-600 mt-1">
+                  ${auction.currentPrice}
+                </p>
+              </div>
+              {isSoldOut && (
+                <span className="inline-flex items-center px-3 py-1 text-sm font-semibold text-red-700 bg-red-50 border border-red-100 rounded-full">
+                  Sold Out
+                </span>
+              )}
+            </div>
             
             <div className="mt-8">
-              {user ? (
+              {isSoldOut ? (
+                <div className="space-y-2 bg-gray-50 border border-gray-100 p-4 rounded-2xl">
+                  <p className="text-lg font-bold text-gray-800">Auction Ended</p>
+                  <p className="text-gray-600">
+                    {winningBidder
+                      ? <>Won by <span className="font-semibold">{winningBidder}</span></>
+                      : 'Highest bidder information unavailable.'}
+                  </p>
+                  {winningBidAmount && (
+                    <p className="text-gray-600">
+                      Winning Bid: <span className="font-semibold">${winningBidAmount}</span>
+                    </p>
+                  )}
+                </div>
+              ) : user ? (
                 <form onSubmit={handleSubmitBid} className="space-y-4">
                   <input
                     type="number"

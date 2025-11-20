@@ -33,7 +33,7 @@ namespace LiveBid.Api.Controllers
 
         // This method will find and return a single auction.
         [HttpGet("{id}")]
-        public async Task<ActionResult<Auction>> GetAuction(Guid id)
+        public async Task<ActionResult<AuctionDetailDto>> GetAuction(Guid id)
         {
             // We use 'Include' to grab the 'Bids'
             // and 'OrderByDescending' to show the newest bids first.
@@ -47,9 +47,39 @@ namespace LiveBid.Api.Controllers
             }
 
             // We'll also sort the bids here for the client
-            auction.Bids = auction.Bids.OrderByDescending(b => b.Timestamp).ToList();
+            var orderedBids = auction.Bids
+                .OrderByDescending(b => b.Timestamp)
+                .ToList();
 
-            return auction;
+            var hasEnded = auction.EndTime <= DateTime.UtcNow || auction.Status == AuctionStatus.Finished;
+            var winningBid = orderedBids
+                .OrderByDescending(b => b.Amount)
+                .FirstOrDefault();
+
+            if (hasEnded && auction.Status == AuctionStatus.Active)
+            {
+                auction.Status = AuctionStatus.Finished;
+                await _context.SaveChangesAsync();
+            }
+
+            var dto = new AuctionDetailDto
+            {
+                Id = auction.Id,
+                ItemName = auction.ItemName,
+                Description = auction.Description,
+                ImageUrl = auction.ImageUrl,
+                StartingPrice = auction.StartingPrice,
+                CurrentPrice = auction.CurrentPrice,
+                StartTime = auction.StartTime,
+                EndTime = auction.EndTime,
+                Status = auction.Status,
+                Bids = orderedBids,
+                IsSoldOut = hasEnded,
+                WinningBidder = hasEnded ? winningBid?.BidderUsername : null,
+                WinningBidAmount = hasEnded ? winningBid?.Amount : null
+            };
+
+            return dto;
         }
 
         // POST: /api/auctions (Admin only)
@@ -119,5 +149,22 @@ namespace LiveBid.Api.Controllers
         public decimal StartingPrice { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
+    }
+
+    public class AuctionDetailDto
+    {
+        public Guid Id { get; set; }
+        public string ItemName { get; set; }
+        public string Description { get; set; }
+        public string? ImageUrl { get; set; }
+        public decimal StartingPrice { get; set; }
+        public decimal CurrentPrice { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public AuctionStatus Status { get; set; }
+        public List<Bid> Bids { get; set; } = new();
+        public bool IsSoldOut { get; set; }
+        public string? WinningBidder { get; set; }
+        public decimal? WinningBidAmount { get; set; }
     }
 }
