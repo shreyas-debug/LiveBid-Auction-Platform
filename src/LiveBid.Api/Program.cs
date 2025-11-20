@@ -143,6 +143,8 @@ using (var scope = app.Services.CreateScope())
         
         context.Database.Migrate(); // Applies any pending migrations
         Console.WriteLine("Database migration successful.");
+
+        await DataSeeder.SeedAsync(services, builder.Configuration);
     }
     catch (Exception ex)
     {
