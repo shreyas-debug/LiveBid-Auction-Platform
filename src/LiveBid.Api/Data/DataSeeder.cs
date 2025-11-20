@@ -89,12 +89,36 @@ public static class DataSeeder
             {
                 Id = Guid.NewGuid(),
                 ItemName = "Artisan Coffee Kit",
-                Description = "Hand grinder, pour-over set, and premium beans.",
+                Description = "Coffee machine with grinder and small-batch beans.",
                 ImageUrl = "https://images.unsplash.com/photo-1637029436347-e33bf98a5412",
                 StartingPrice = 80m,
                 CurrentPrice = 80m,
                 StartTime = now,
                 EndTime = now.AddDays(3),
+                Status = AuctionStatus.Active
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                ItemName = "Handcrafted Electric Guitar",
+                Description = "White guitar with black pickups",
+                ImageUrl = "https://images.unsplash.com/photo-1568193755668-aae18714a9f1",
+                StartingPrice = 900m,
+                CurrentPrice = 900m,
+                StartTime = now,
+                EndTime = now.AddDays(6),
+                Status = AuctionStatus.Active
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                ItemName = "Designer Lounge Chair",
+                Description = "Modern lounge chair with a unique design",
+                ImageUrl = "https://plus.unsplash.com/premium_photo-1683134274095-22a2d27c6d58",
+                StartingPrice = 600m,
+                CurrentPrice = 600m,
+                StartTime = now,
+                EndTime = now.AddDays(8),
                 Status = AuctionStatus.Active
             }
         };
